@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+from docx import Document
+from pdf2image import convert_from_path
+import pytesseract
+import click 
+
+
+def convert_pdf_to_images(pdf_path):
+    images = convert_from_path(pdf_path, dpi=300)
+    return images
+
+def ocr_image_to_text(image, lang='pol'):
+    return pytesseract.image_to_string(image, lang=lang)
+
+
+@click.command()
+@click.argument('input_pdf_path')
+@click.argument('output_word_path')
+@click.option('--lang', default='pol')
+def pdf_to_word(input_pdf_path, output_word_path, lang):
+    """
+    Converts PDF file into Word using OCR
+    Example usage:
+    pdf2word ./my_input_file.pdf ./my_output_word_file.docx
+    """
+    images = convert_pdf_to_images(input_pdf_path)
+
+    document = Document()
+
+    for image in images:
+        text = ocr_image_to_text(image, lang=lang)
+        document.add_paragraph(text)
+
+    document.save(output_word_path)
+
+if __name__ == "__main__":
+    pdf_to_word()
+
