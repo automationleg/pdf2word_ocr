@@ -5,24 +5,22 @@ import pytesseract
 import click 
 
 
-def convert_pdf_to_images(pdf_path):
+def convert_pdf_to_images(pdf_path: str) -> list:
     images = convert_from_path(pdf_path, dpi=300)
     return images
 
-def ocr_image_to_text(image, lang='pol'):
+def convert_pdf_to_text(pdf_path: str, lang='pol') -> str:
+    images = convert_pdf_to_images(pdf_path)
+    full_text = ""
+    for image in images:
+        text = ocr_image_to_text(image, lang=lang)
+        full_text += text + "\n"
+    return full_text
+
+def ocr_image_to_text(image, lang='pol')-> str:
     return pytesseract.image_to_string(image, lang=lang)
 
-
-@click.command()
-@click.argument('input_pdf_path')
-@click.argument('output_word_path')
-@click.option('--lang', default='pol')
-def pdf_to_word(input_pdf_path, output_word_path, lang):
-    """
-    Converts PDF file into Word using OCR
-    Example usage:
-    pdf2word ./my_input_file.pdf ./my_output_word_file.docx
-    """
+def convert_pdf_to_word(input_pdf_path, lang='pol') -> Document:
     images = convert_pdf_to_images(input_pdf_path)
 
     document = Document()
@@ -31,8 +29,49 @@ def pdf_to_word(input_pdf_path, output_word_path, lang):
         text = ocr_image_to_text(image, lang=lang)
         document.add_paragraph(text)
 
-    document.save(output_word_path)
+    return document
+
+def write_word_to_file(document: Document, output_file_path: str) -> None:
+    document.save(output_file_path)
+            
+def write_text_to_file(text, output_file_path) -> None:
+    with open(output_file_path, 'w', encoding='utf-8') as f:
+        f.write(text)
+        
+def write_images_to_text_file(images, output_file_path) -> None:
+    with open(output_file_path, 'w', encoding='utf-8') as f:
+        for image in images:
+            text = ocr_image_to_text(image)
+            f.write(text + '\n')
+
+
+@click.command()
+@click.argument('input_file_path')
+@click.argument('output_file_path')
+@click.option('--lang', default='pol')
+@click.option('--format', type=click.Choice(['txt', 'docx']), default='txt', help='Output file format')
+def pdf_to_text_doc(input_file_path, output_file_path, lang, format):
+    """
+    Converts PDF file into Word using OCR
+    Example usage:
+    pdf2word ./my_input_file.pdf ./my_output_word_file
+    """
+    if input_file_path.lower().endswith('.pdf'):
+        if format == 'docx':
+            document = convert_pdf_to_word(input_file_path, lang)
+            write_word_to_file(document, output_file_path + '.docx')
+        elif format == 'txt':
+            text = convert_pdf_to_text(input_file_path, lang)
+            write_text_to_file(text, output_file_path + '.txt')
+        else:
+            raise ValueError("Unsupported format. Please use either 'txt' or 'docx'.")
+    elif input_file_path.lower().endswith('.jpeg'):
+        text = ocr_image_to_text(input_file_path, lang)
+        write_text_to_file(text, output_file_path + '.txt')
+    else:
+        raise ValueError("Unsupported file type. Please provide a PDF or JPEG file.")
+    
 
 if __name__ == "__main__":
-    pdf_to_word()
+    pdf_to_text_doc()
 
