@@ -38,6 +38,9 @@ RUN pip3 install --no-cache-dir -r /scripts/requirements.txt
 # Copy your script into the container
 COPY ./pdf2word /scripts/pdf2word
 
+# Create data directory and set permissions
+RUN mkdir -p /data && chown -R node:node /data
+
 WORKDIR /data
 
 
