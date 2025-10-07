@@ -74,6 +74,7 @@ def pdf_to_text_doc(input_file_path, output_file_path, lang, format):
     else:
         raise ValueError("Unsupported file type. Please provide a PDF or JPEG file.")
 
+    import json
     metadata = {
         "json": {
         "input_file": input_file_path,
@@ -83,7 +84,7 @@ def pdf_to_text_doc(input_file_path, output_file_path, lang, format):
         }
     }
     
-    print(metadata)
+    print(json.dumps(metadata))
 
 if __name__ == "__main__":
     pdf_to_text_doc()
