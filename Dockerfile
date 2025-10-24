@@ -37,6 +37,11 @@ RUN pip3 install --no-cache-dir -r /scripts/requirements.txt
 
 # Copy your script into the container
 COPY ./pdf2word /scripts/pdf2word
+COPY ./app.py /app.py
+
+# store html web interface
+RUN mkdir -p /html
+COPY ./index.html /index.html
 
 # Create data directory and set permissions
 RUN mkdir -p /data && chown -R node:node /data
@@ -48,4 +53,5 @@ COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
+EXPOSE 5500/tcp
 EXPOSE 5678/tcp

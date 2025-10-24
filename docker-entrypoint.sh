@@ -6,6 +6,9 @@ if [ -d /root/.n8n ] ; then
   ln -s /root/.n8n /home/node/
 fi
 
+# Start Flask app in the background
+python /app.py &
+
 if [ "$#" -gt 0 ]; then
   # Got started with arguments
   exec gosu node "$@"
